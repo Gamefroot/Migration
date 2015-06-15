@@ -1,0 +1,14 @@
+{
+  "name": "gf migration",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The Migration of the data",
+  "keywords": [],
+  "dependencies": {
+    "async": "latest",
+    "superagent": "latest",
+    "lodash": "latest",
+    "mysql": "latest",
+    "php-unserialize": "latest"
+  }
+}
