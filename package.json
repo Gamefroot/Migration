@@ -1,5 +1,5 @@
 {
-  "name": "gf migration",
+  "name": "gf-migration",
   "private": true,
   "version": "0.0.0",
   "description": "The Migration of the data",
@@ -9,6 +9,15 @@
     "superagent": "latest",
     "lodash": "latest",
     "mysql": "latest",
-    "php-unserialize": "latest"
+    "php-unserialize": "latest",
+    "waterline": "~0.10.17",
+    "sails-mysql": "latest",
+    "progress": "latest",
+    "validator": "latest",
+    "redis": "latest",
+    "Request": "latest",
+    "debug": "latest",
+    "gcloud": "latest",
+    "q": "latest"
   }
 }
