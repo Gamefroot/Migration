@@ -52,7 +52,7 @@ setupWaterline(config, function(err, results) {
     connection.query("SELECT * FROM wp_users ORDER BY ID DESC", function(err, rows) {
 
         if (err) throw new Error(err);
-        var bar = new ProgressBar("Migrating [:bar]:percent :current/:total eta :eta(s)", { 
+        var bar = new ProgressBar("Migrating [:bar]:percent :current/:total eta :eta(s)", {
             total: rows.length,
             width: 100,
             callback: function(){
@@ -64,7 +64,7 @@ setupWaterline(config, function(err, results) {
             bar.tick();
             return; //done
         }
-        
+
         // console.log( rows.length );
         var len = rows.length;
         async.each(rows, function(user, callback) {
@@ -73,15 +73,16 @@ setupWaterline(config, function(err, results) {
                 if (rows && rows.length ) {
                     var perm = phpunserialize.unserialize(rows[0].meta_value);
                     var pro = _.has(perm, "pro");
+                    var admin = _.has(perm, "administrator");
 
                     results.collections.user.create(_.extend(packDefault, {
                         username: user.user_login,
                         password: user.user_pass,
                         firstName: user.display_name,
-                        subscriptionType: pro ? "pro" : "none"
+                        subscriptionType: pro ? "pro" : admin ? "admin" : "none"
                     })).then(function(data) {
                         if (!validator.isEmail( user.user_email )){
-                            new Pack( user.ID, data.id , function(){                             
+                            new Pack( user.ID, data.id , function(){
                                 new Game( user.ID, data.id, function(){
                                     bar.tick();
                                     callback();
@@ -92,7 +93,7 @@ setupWaterline(config, function(err, results) {
                                 owner: data.id,
                                 value: user.user_email
                             }).then(function(){
-                                //now lets go and create packs for that said user                               
+                                //now lets go and create packs for that said user
                                 new Pack( user.ID, data.id , function(){
                                     // bar.tick();
                                     new Game( user.ID, data.id, function(){
