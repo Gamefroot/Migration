@@ -4,15 +4,14 @@ var request = require("superagent");
 var async = require("async");
 var redis = require("redis").createClient();
 var Path = require("path");
-
 var storage = require("./storage.js");
 
 
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
-    database: "gamefroot_wp"
+    password: "root",
+    database: "bk_db"
 });
 
 connection.connect();
@@ -105,60 +104,54 @@ function terrain(user_id, pack, id, models, callback, postType) {
             redis.get("amazon-s3-loc-" + id, function(err, url) {
                 if (err) throw new Error(err);
                 if (url) {
+                    console.log("creating asset");
                     models.asset.create({
                         owner: user_id,
                         assetType: "staticImage",
                     }).then(function(sprite) {
                         //now we have the image for the asset, so now we can create things....	
                         var sent = false;
-                        request.get(awsURL + url)
-                            .end(function(err, data) {                               
-                                if (data && data.body && !err) {
-                                    var buffer = data.body;
-                                    //so now we have the file lets do magic! no really magic!
-                                    storage.saveFile(buffer, Path.normalize('/users/' + user_id + '/pack/' + pack.id + '/' + sprite.id + ".png")).then(function(response) {
-                                        pack.assets.add(asset.id);
+                        var buffer = new Buffer();
+                        console.log("Uploading");
+                        //so now we have the file lets do magic! no really magic!
+                        storage.saveFile(buffer, Path.normalize('/users/' + user_id + '/pack/' + pack.id + '/' + sprite.id + ".png")).then(function(response) {
+                            console.log("Saving asset");
+                            pack.assets.add(asset.id);
 
-                                        var meta = {
-                                        	animations: new animation(sprite.id, response.publicUrl),
-                                        	terrain: true
-                                        };
+                            var meta = {
+                            	animations: new animation(sprite.id, response.publicUrl),
+                            	terrain: true
+                            };
 
-                                        asset.update({
-                                            meta: JSON.stringify(meta)
-                                        }).then(function() {
-                                            //saved the pack
-                                            models.asset.update(sprite.id, {
-                                                meta: JSON.stringify({
-                                                    filePath: response.remoteUrl
-                                                })
-                                            }).then(function() {
-                                                pack.save().then(function() {
-                                                    callback();
-                                                }, function( err ) {
-                                                    //failed
-                                                    callback(err);
-                                                }).fail(function(){
-                                                    callback();
-                                                });
-                                            }, function(){
-                                                callback();
-                                            }).fail(function(){
-                                            	callback();
-                                            });
-                                        }).fail(function( err ){
-                                        	callback( err );
-                                        });
-                                    }, function(err) {
-                                        callback( err );
+                            asset.update({
+                                meta: JSON.stringify(meta)
+                            }).then(function() {
+                                //saved the pack
+                                models.asset.update(sprite.id, {
+                                    meta: JSON.stringify({
+                                        filePath: response.remoteUrl
+                                    })
+                                }).then(function() {
+                                    pack.save().then(function() {
+                                        callback();
+                                        console.log("Done asset");
+                                    }, function( err ) {
+                                        //failed
+                                        callback(err);
+                                    }).fail(function(){
+                                        callback();
                                     });
-                                } else {
-                                    if (!sent){
-                                        sent = true; 
-                                        callback(); //only because superagent loves sending back multiple error messages for some reason...                                      
-                                    }
-                                }
+                                }, function(){
+                                    callback();
+                                }).fail(function(){
+                                	callback();
+                                });
+                            }).fail(function( err ){
+                            	callback( err );
                             });
+                        }, function(err) {
+                            callback( err );
+                        });
                     }, function(){
                         callback();
                     }).fail(function(err) {
@@ -195,10 +188,12 @@ function Item(user_id, pack, id, models, cb, postType) {
                         var sent = false;        	
                         getImage(rows[0].filename, function(err, body) {
                             if (body && !err) {
+                                pack.assets.add(Asset.id);
                                 models.asset.create({
                                     owner: user_id,
                                     assetType: "staticImage",
                                 }).then(function(sprite) {
+
                                     storage.saveFile(body, Path.normalize('/users/' + user_id + '/pack/' + pack.id + '/' + sprite.id + ".png")).then(function(response) {
                                        	models.asset.update(sprite.id, {
                                             meta: JSON.stringify({
@@ -274,7 +269,10 @@ function Script( user_id, pack, id, models, cb, postType ){
 		        })
 		    }).then(function( res ) {
                 global.changed.push({old: id, newID: res.id });
-		   		cb();
+                pack.assets.add( res.id );
+                pack.save().then(function(){
+                    cb();
+                });
 	    	}, function(err){
 	    		cb( err );
 	    	}).fail(function(){
@@ -288,15 +286,15 @@ function Script( user_id, pack, id, models, cb, postType ){
 
 
 function getImage(url, cb) {
-    console.log("getting image %s", awsURL + url);
+    //console.log("getting image %s", awsURL + url);
     request.get(awsURL + url)
     .end(function(err, data) {   
-        console.log("got image %s", awsURL + url);    
-        if (data && data.body && !err) {
-            cb(false, data.body);
-        } else {
-            cb(new Error(err), false);
-        }
+       console.log("got image %s", awsURL + url);    
+       if (data && data.body && !err) {
+            cb(false, new Buffer());
+       } else {
+           cb(new Error(err), false);
+       }
     });
 }
 

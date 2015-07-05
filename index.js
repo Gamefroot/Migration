@@ -26,8 +26,8 @@ global.changed = [];
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
-    database: "gamefroot_wp"
+    password: "root",
+    database: "bk_db"
 });
 
 connection.connect();
@@ -45,11 +45,12 @@ var packDefault = {
 
 
 setupWaterline(config, function(err, results) {
+    console.log("started");
     if (err) {
         return console.log(err);
     }
 
-    connection.query("SELECT * FROM wp_users ORDER BY ID DESC", function(err, rows) {
+    connection.query("SELECT * FROM wp_users ORDER BY ID ASC LIMIT 1230", function(err, rows) {
 
         if (err) throw new Error(err);
         var bar = new ProgressBar("Migrating [:bar]:percent :current/:total eta :eta(s)", {
@@ -59,6 +60,8 @@ setupWaterline(config, function(err, results) {
                 console.log("done");
             }
         });
+
+        console.log("started");
 
         if (rows.length == 0) {
             bar.tick();

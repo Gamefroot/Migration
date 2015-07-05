@@ -37,6 +37,6 @@ module.exports = {
     },
 
     defaults: {
-        migrate: "drop"
+        migrate: "safe"
     }
 };

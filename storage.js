@@ -31,7 +31,7 @@ var PRODUCTION_BUCKET_NAME = 'files.gamefroot.com';
  * @const
  * @type {string}
  */
-var ASSETS_BUCKET_NAME = "development" ? PRODUCTION_BUCKET_NAME : STAGING_BUCKET_NAME;
+var ASSETS_BUCKET_NAME = PRODUCTION_BUCKET_NAME;
 
 
 var gcloudClient = gcloud({
@@ -64,30 +64,30 @@ var storage = {
 		var defer = q.defer();
 		var self = this;
 		d("Uploading file to - %s", remotePath );
-		var bucket = client.bucket( ASSETS_BUCKET_NAME );		
+		//var bucket = client.bucket( ASSETS_BUCKET_NAME );		
 		if ( bucket ){
 			var url = Path.normalize( remotePath );
-			var file = bucket.file( url );
+			//var file = bucket.file( url );
 			if ( !Buffer.isBuffer( localFile ) ) {
 				defer.reject("Not a buffer");
 				return defer.promise;
 			}
 
-			var bufferStream = new Stream.PassThrough();
-				bufferStream.end( localFile );
+			//var bufferStream = new Stream.PassThrough();
+			//	bufferStream.end( localFile );
 
-			bufferStream
-			.pipe(file.createWriteStream({
-				resumable: false,
-				metadata: {
-					contentType: mime.lookup( url )
-				}
-			}))
-			.on('error', function(err) {		
-				defer.reject( err );
-			})
-			.on('complete', function( res ) {
-				file.makePublic(function(err){});
+			// bufferStream
+			// .pipe(file.createWriteStream({
+			// 	resumable: false,
+			// 	metadata: {
+			// 		contentType: mime.lookup( url )
+			// 	}
+			// }))
+			// .on('error', function(err) {		
+			// 	defer.reject( err );
+			// })
+			// .on('complete', function( res ) {
+				// file.makePublic(function(err){});
 
 				// The file upload is complete.
 				defer.resolve({
@@ -95,10 +95,10 @@ var storage = {
 					publicUrl: storage.getHTTPSurl( url )		
 				});
 
-				//lets free up some memory...
-				delete localFile;
-				delete bufferStream;
-			});
+			// 	//lets free up some memory...
+			// 	delete localFile;
+			// 	delete bufferStream;
+			// });
 		}
 		return defer.promise;
 	},

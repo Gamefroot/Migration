@@ -12,8 +12,8 @@ var storage = require("./storage.js");
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
-    database: "gamefroot_wp"
+    password: "root",
+    database: "bk_db"
 });
 
 connection.connect();

@@ -28,7 +28,7 @@ function hashPassword (user, next) {
 };
 
 module.exports = {
-    tableName: "users",
+    tableName: "user",
     connection: "mysql",
 
 	SUBSCRIPTION_NONE: "none",
@@ -60,7 +60,7 @@ module.exports = {
 
 	  	subscriptionType: {
 	  		type: "string",
-	  		enum: ["none","pro"],
+	  		enum: ["none","pro", "admin"],
 	  		defaultsTo: "none"
 	  	},
 
